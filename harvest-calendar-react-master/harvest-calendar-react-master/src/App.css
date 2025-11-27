@@ -1,15 +1,12 @@
-/* App.css */
+/* App.css */@import url('https://fonts.googleapis.com/css?family=Montserrat');
 
-@import url('https://fonts.googleapis.com/css?family=Montserrat|PT+Mono');
-
-html, p, a, button, input {
-  font-family: 'Montserrat', sans-serif;
+html, body, p, a, button, input {
+  font-family: 'Montserrat', Arial, sans-serif;
   margin: 0;
   padding: 0;
   font-size: 14px;
-  font-variant: tabular-nums;
   line-height: 1.5;
-  color: rgba(0, 0, 0, 0.65);
+  color: #333;
 }
 
 p {
@@ -17,52 +14,76 @@ p {
 }
 
 h1, h2, h3, h4, h5, h6, th {
-  font-family: 'PT Mono', monospace;
-  color: rgba(0, 0, 0, 0.85);
+  font-family: 'Montserrat', Arial, sans-serif;
+  color: #222;
   font-weight: 500;
 }
 
 #app {
   text-align: center;
+  background: #fff8e1; /* light yellow background */
+  min-height: 100vh;
 }
 
-header {
-  display: inline-block;
-  max-width: 750px;
-  margin: 1em;
+/* App Bar */
+.app-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ff9800; /* bright orange */
+  color: #fff;
+  padding: 1em;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
+.app-bar h1 {
+  font-size: 1.5em;
+  font-weight: bold; /* bold title */
+}
+
+/* Buttons */
 button, .btn {
   display: inline-block;
   border-radius: .25em;
-  padding: .25em;
-  text-decoration: none;
+  padding: .25em .5em;
   font-size: 14px;
   margin: .25em .5em;
+  cursor: pointer;
+  transition: all 0.3s;
 }
 
-.btn-primary, .btn-primary:hover {
-  border: 1px solid #5599ff;
-  background-color: #5599ff;
+.btn-primary {
+  border: 1px solid #ffa726;
+  background-color: #ffa726; /* normal orange */
   color: white;
 }
 
-.btn-secondary {
-  border: 1px solid #5599ff;
-  background-color: white;
-  color: #5599ff;
+.btn-primary:hover {
+  background-color: #fb8c00; /* darker orange on hover */
 }
 
+.btn-secondary {
+  border: 1px solid #ff9800;
+  background-color: #fff3e0;
+  color: #ff9800;
+}
+
+/* Form container layout */
 #form-container {
   display: inline-grid;
   grid-template-columns: repeat(4, 1fr);
   max-width: 1200px;
+  margin: 1em auto;
 }
 
 #instructions {
   grid-column: 1 / span 1;
   margin-left: 1em;
   margin-bottom: 1em;
+  text-align: left;
 }
 
 #form {
@@ -79,16 +100,12 @@ button, .btn {
   }
 }
 
+/* Footer */
 .footer {
-  margin-top: 20vh;
-}
-.logo {
-  display: inline-block;
-  text-align: center;
-  max-width: 100px;
+  margin-top: 10vh;
 }
 
 .footer a {
-  color: rgba(0, 0, 0, 0.35);
+  color: rgba(0,0,0,0.35);
   text-decoration: none;
 }

@@ -1,174 +1,99 @@
-
+/* Form.css */
 .row {
   display: grid;
-  grid-column: 2 / span 3;
-  grid-template-columns: repeat(12, 1fr);
+  grid-template-columns: 1fr 3fr 1fr;
+  align-items: center;
   margin-bottom: 1.5em;
+  gap: 0.5em;
 }
 
+/* Column headers */
 .col-hd {
   text-align: center;
+  font-weight: 500;
 }
 
-.col-hd.season {
-  grid-column: 4 / span 8;
-}
-
-.name {
-  grid-column: 1 / span 3;
-  text-align: center;
-}
-
-.name:not(.col-hd) {
-  margin: .25em .5em;
-}
-
+/* Crop name input */
 .name input {
-  border: none;
-  margin: 0 1em;
+  width: 100%;
+  padding: 0.25em 0.5em;
   text-align: center;
-  max-width: 90%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
-input[type="date"] {
-  border: none;
-  max-width: 50%;
-  background-color: rgba(0,0,0,0);
+/* Season container */
+.season {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
 }
 
+/* Each season row inside a crop */
+.season-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+}
+
+.season-item input[type="date"] {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.2em 0.3em;
+  text-align: center;
+  width: 120px;
+}
+
+/* Divider between start and end */
 .date-divider {
-  position: absolute;
-  left: calc(50% - 30px);
-  z-index: -100;
+  display: inline-block;
+  margin: 0 5px;
 }
 
-.start {
-  text-align: left;
+/* Add season button */
+.add-season {
+  margin-top: 0.25em;
+  font-size: 12px;
+  padding: 0.2em 0.5em;
+  border: 1px solid orange;
+  background-color: white;
+  color: orange;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.end {
-  text-align: left;
+.add-season:hover {
+  background-color: orange;
+  color: white;
+  border-color: orange;
 }
 
-.season:not(.col-hd) {
-  position: relative;
-  margin: .25em .5em;
-}
-
-.season-one {
-  grid-column: 4 / span 4;
-  padding: 0 .5em;
-}
-
-.season-two {
-  grid-column: 8 / span 4;
-}
-
+/* Delete button column */
 .delete {
-  grid-column: 12 / span 1;
+  text-align: center;
 }
 
-@media (max-width: 1200px) {
-  .col-hd.season {
-    grid-column: 5 / span 6;
-    order: 2;
-  }
-  .name {
-    grid-column: 1 / span 4;
-    order: 1;
-  }
-  .season-one {
-    grid-column: 5 / span 6;
-    order: 2;
-  }
-  .season-two {
-    grid-column: 5 / span 6;
-    order: 4;
-  }
-  .date-divider {
-    left: calc(50% - 45px);
-  }
-  .delete {
-    grid-column: 11 / span 2;
-    order: 3;
-    text-align: left;
-  }
+.delete button {
+  padding: 0.25em 0.5em;
+  font-size: 12px;
 }
 
-@media (max-width: 975px) {
-  .name {
-    grid-column: 1 / span 3;
-    order: 1;
-  }
-  .season-one {
-    grid-column: 4 / span 8;
-    order: 2;
-  }
-  .season-two {
-    grid-column: 4 / span 8;
-    order: 4;
-  }
-  .delete {
-    grid-column: 12 / span 1;
-    order: 3;
-  }
-}
-
-@media (max-width: 575px) {
+/* Responsive adjustments */
+@media (max-width: 800px) {
   .row {
-    margin-bottom: 3em;
+    grid-template-columns: 1fr;
   }
-  .col-hd.season {
-    grid-column: 5 / span 6;
-    order: 2;
+  .season {
+    width: 100%;
   }
-  .name {
-    grid-column: 1 / span 4;
-    order: 1;
+  .season-item input[type="date"] {
+    width: 45%;
   }
-  .season-one {
-    grid-column: 5 / span 8;
-    order: 2;
-  }
-  .season-two {
-    grid-column: 5 / span 8;
-    order: 4;
-  }
-  .date-divider {
-    left: calc(50% - 35px);
+  .add-season {
+    width: 100%;
   }
   .delete {
-    grid-column: 1 / span 4;
-    order: 3;
-    text-align: right;
-  }
-}
-
-@media (max-width: 435px) {
-  .col-hd {
-    display: none;
-  }
-  .name {
-    grid-column: 1 / span 6;
-    order: 1;
-    text-align: right;
-  }
-  .delete {
-    grid-column: 7 / span 6;
-    order: 2;
-    text-align: left;
-  }  
-  .season-one {
-    grid-column: 1 / span 12;
-    order: 3;
-    text-align: center;
-  }
-  .season-two {
-    grid-column: 1 / span 12;
-    order: 4;
-    text-align: center;
-  }
-  .date-divider {
-    left: calc(50% - 25px);
+    margin-top: 0.5em;
   }
 }
