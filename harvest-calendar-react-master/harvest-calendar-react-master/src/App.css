@@ -1,4 +1,5 @@
-/* App.css */@import url('https://fonts.googleapis.com/css?family=Montserrat');
+/* App.css */
+@import url('https://fonts.googleapis.com/css?family=Montserrat');
 
 html, body, p, a, button, input {
   font-family: 'Montserrat', Arial, sans-serif;

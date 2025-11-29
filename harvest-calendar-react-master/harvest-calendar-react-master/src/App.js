@@ -1,6 +1,6 @@
-// App.js
+// src/App.js
 import React, { Component } from 'react';
-import { db } from './firebase';
+import { db, firebase } from './firebase';
 import Form from './Form';
 import Calendar from './Calendar';
 import './App.css';
@@ -8,127 +8,167 @@ import './App.css';
 class App extends Component {
   constructor(props) {
     super(props);
+
     this.state = {
+      uid: null,
+      email: '',
+      password: '',
       crops: [],
+      loading: false,
+      signedIn: false,
     };
   }
 
-  componentDidMount() {
-    this.fetchCrops();
-  }
+  // Sign in with email/password
+  signInWithEmail = async () => {
+    const { email, password } = this.state;
+    if (!email || !password) {
+      alert("Email and password are required");
+      return;
+    }
 
-  fetchCrops() {
-    db.collection("crops").get()
-      .then(snapshot => {
-        const cropsList = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        this.setState({ crops: cropsList });
-      })
-      .catch(error => console.error("Error fetching crops:", error));
-  }
+    this.setState({ loading: true });
 
-  addCrop() {
-    const newCrop = { name: "", seasons: [{ start: "", end: "" }] };
-    db.collection("crops").add(newCrop)
-      .then(docRef => {
-        this.setState({ crops: [...this.state.crops, { ...newCrop, id: docRef.id }] });
-      })
-      .catch(error => console.error("Error adding crop:", error));
-  }
+    try {
+      await firebase.auth().signInWithEmailAndPassword(email, password);
+      const user = firebase.auth().currentUser;
+      if (user) {
+        this.setState({ uid: user.uid, signedIn: true }, () => {
+          this.fetchCrops();
+        });
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+      alert(`Login failed: ${error.message}`);
+      this.setState({ loading: false });
+    }
+  };
 
-  deleteCrop(index) {
-    const cropToDelete = this.state.crops[index];
-    if (cropToDelete.id) db.collection("crops").doc(cropToDelete.id).delete().catch(console.error);
-    this.setState({
-      crops: [
-        ...this.state.crops.slice(0, index),
-        ...this.state.crops.slice(index + 1)
-      ]
+  fetchCrops = () => {
+    const { uid } = this.state;
+    const user = firebase.auth().currentUser;
+
+    if (!uid || !user) {
+      console.warn("User not signed in or UID not available yet");
+      this.setState({ loading: false });
+      return;
+    }
+
+   db.collection("crops")
+  .where("userId", "==", uid)
+  .get()
+  .then(snapshot => {
+    const cropsList = snapshot.docs.map(doc => {
+      const data = doc.data();
+      // Ensure each crop has at least one valid season
+      if (!data.seasons || data.seasons.length === 0) {
+        const year = new Date().getFullYear();
+        data.seasons = [{ start: `${year}-01-01`, end: `${year}-03-31` }]; // default season
+      }
+      return { id: doc.id, ...data };
     });
-  }
+    this.setState({ crops: cropsList, loading: false });
+  })
+  .catch(error => {
+    console.error("Error fetching crops:", error);
+    this.setState({ loading: false });
+  });
 
-  updateCrop(index, updated) {
+  };
+
+  addCrop = () => {
+    const { uid, crops } = this.state;
+    const newCrop = { name: "", seasons: [{ start: "", end: "" }], userId: uid };
+
+    db.collection("crops").add(newCrop).then(docRef => {
+      this.setState({ crops: [...crops, { ...newCrop, id: docRef.id }] });
+    });
+  };
+
+  deleteCrop = index => {
+    const { crops } = this.state;
+    const crop = crops[index];
+    if (crop.id) db.collection("crops").doc(crop.id).delete();
+    this.setState({ crops: crops.filter((_, i) => i !== index) });
+  };
+
+  updateCrop = (index, updated) => {
     const crops = [...this.state.crops];
-    const crop = { ...crops[index] };
-
-    if (updated.name !== undefined) crop.name = updated.name;
-    if (updated.seasons !== undefined) crop.seasons = updated.seasons;
-
-    crops[index] = crop;
+    crops[index] = { ...crops[index], ...updated };
     this.setState({ crops });
+    if (crops[index].id) db.collection("crops").doc(crops[index].id).update(crops[index]);
+  };
 
-    if (crop.id) db.collection("crops").doc(crop.id).update(crop).catch(console.error);
-  }
-
-  addSeasonToCrop(index) {
+  addSeasonToCrop = index => {
     const crops = [...this.state.crops];
     crops[index].seasons.push({ start: "", end: "" });
     this.setState({ crops });
-  }
+  };
 
-  autoSchedulePineapple(index, batches = 4) {
-    const crops = [...this.state.crops];
-    const crop = crops[index];
-    const year = new Date().getFullYear();
-    const batchMonths = Math.floor(12 / batches);
-
-    crop.seasons = [];
-    for (let i = 0; i < batches; i++) {
-      const startMonth = i * batchMonths;
-      const endMonth = startMonth + batchMonths - 1;
-      const startDate = new Date(year, startMonth, 1).toISOString().split('T')[0];
-      const endDate = new Date(year, endMonth + 1, 0).toISOString().split('T')[0];
-      crop.seasons.push({ start: startDate, end: endDate });
-    }
-
-    this.setState({ crops });
-    if (crop.id) db.collection("crops").doc(crop.id).update(crop).catch(console.error);
-  }
-
-  saveAllCrops() {
+  saveAllCrops = () => {
     this.state.crops.forEach(crop => {
-      if (crop.id) {
-        db.collection("crops").doc(crop.id).update(crop).catch(console.error);
-      } else {
-        db.collection("crops").add(crop).catch(console.error);
-      }
+      if (crop.id) db.collection("crops").doc(crop.id).update(crop);
     });
-    alert("All crop data saved!");
-  }
+    alert("All crops saved!");
+  };
 
   render() {
+    const { signedIn, loading, crops, email, password } = this.state;
+
+    if (!signedIn) {
+      return (
+        <div style={{ padding: "2rem" }}>
+          <h2>Login</h2>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={e => this.setState({ email: e.target.value })}
+            style={{ display: "block", marginBottom: "1rem" }}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={e => this.setState({ password: e.target.value })}
+            style={{ display: "block", marginBottom: "1rem" }}
+          />
+          <button onClick={this.signInWithEmail}>Sign In</button>
+          {loading && <p>Loading...</p>}
+        </div>
+      );
+    }
+
+    if (loading) return <p>Loading crops...</p>;
+
     return (
       <div id="app">
-        {/* App Bar */}
         <div className="app-bar">
           <h1>Harvest Calendar</h1>
         </div>
 
         <header>
-          <p>Plan pineapple farming with equal harvest distribution across the year.</p>
+          <p>Plan pineapple farming with equal harvest distribution.</p>
         </header>
 
         <div id="form-container">
           <div id="instructions">
-            <h3>How to use it</h3>
-            <p>Add your crops and schedule the seasons. Use Auto-Schedule for pineapple to balance harvest.</p>
-            <button className="btn btn-secondary" onClick={() => this.addCrop()}>Add Crop</button>
-            <button className="btn btn-primary" onClick={() => this.saveAllCrops()}>Save</button>
+            <h3>How to use</h3>
+            <p>Add crops and schedule the seasons.</p>
+            <button className="btn btn-secondary" onClick={this.addCrop}>Add Crop</button>
+            <button className="btn btn-primary" onClick={this.saveAllCrops}>Save</button>
           </div>
 
-          <Form 
+          <Form
             id="form"
-            crops={this.state.crops}
-            updateCrop={this.updateCrop.bind(this)}
-            deleteCrop={this.deleteCrop.bind(this)}
-            addSeasonToCrop={this.addSeasonToCrop.bind(this)}
-            autoSchedulePineapple={this.autoSchedulePineapple.bind(this)}
+            crops={crops}
+            updateCrop={this.updateCrop}
+            deleteCrop={this.deleteCrop}
+            addSeasonToCrop={this.addSeasonToCrop}
           />
         </div>
 
-        <Calendar crops={this.state.crops} />
+        <Calendar crops={crops} />
       </div>
     );
   }
